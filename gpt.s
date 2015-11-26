@@ -12,7 +12,7 @@ SET_TIME:
 
 SET_ALARM:
 
-	stmfd sp!, {r5 - r11}				@ salvando registradores na pilha
+	stmfd sp!, {r4 - r11}				@ salvando registradores na pilha
 
 	ldr r2, =ALARM_COUNTER				@ poe em r2, o valor do contador de alarmes
 	ldr r2, [r2]
@@ -82,12 +82,12 @@ SET_ALARM:
 		mov pc, lr 
 
 	max_error:
-		ldmfd sp!, {r5 - r11}
+		ldmfd sp!, {r4 - r11}
 		mov r0, #-1
 		mov pc, lr
 
 	time_error:
-		ldmfd sp!, {r5 - r11}
+		ldmfd sp!, {r4 - r11}
 		mov r0, #-2
 		mov pc, lr
 

@@ -1,6 +1,8 @@
 
 
 READ_SONAR:
+	stmfd sp!, {r4}
+
 	cmp r0, #16							@ compara o valor de r0
 	bhs read_sonar_invalid_sonar_error	@ se for maior do que 15, trata o erro
 	
@@ -60,15 +62,21 @@ READ_SONAR:
 	ldr r1, [r2]
 	orr r1, #1
 
+	ldmfd sp!, {r4}
+
 	mov r0, r1
 	mov pc, lr
 
 read_sonar_invalid_sonar_error:
+	ldmfd sp!, {r4}
+
 	mov r0, #-1
 	mov pc, lr
 
 
 REGISTER_PROXIMITY_CALLBACK:
+	stmfd sp!, {r4}
+
 	cmp r0, #16
 	bhs proximity_invalid_sonar_error	@Caso o sonar seja invalido
 
@@ -95,13 +103,19 @@ REGISTER_PROXIMITY_CALLBACK:
 	add r3, r3, #1
 	str r3, [r2]
 
+	ldmfd sp!, {r4}
+
 	mov r0, #0
 	mov pc, lr
 
 	proximity_invalid_sonar_error:
+		ldmfd sp!, {r4}
+
 		mov r0, #-1
 		mov pc, lr
 
 	proximity_maxcallbacks_error:
+		ldmfd sp!, {r4}
+
 		mov r0, #-2
 		mov pc, lr
