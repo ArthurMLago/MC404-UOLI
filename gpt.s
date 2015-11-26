@@ -2,13 +2,13 @@ GET_TIME:
 	ldr r1, =SYSTEM_TIME				@ poe em r0, o valor do contador
 	ldr r0, [r1]
 
-	movs pc, lr
+	mov pc, lr
 
 SET_TIME:
 	ldr r1, =SYSTEM_TIME
 	str r0, [r1]
 
-	movs pc, lr
+	mov pc, lr
 
 SET_ALARM:
 
