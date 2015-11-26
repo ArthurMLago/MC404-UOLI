@@ -133,6 +133,8 @@ GO_TO_USER_PROGRAM:
 
 SVC_HANDLER:
 
+	stmfd sp!, {lr}
+
 	cmp r7, #16
 	bleq READ_SONAR
 
@@ -153,6 +155,8 @@ SVC_HANDLER:
 
 	cmp r7, #22
 	bleq SET_ALARM
+
+	ldmfd sp!, {lr}
 
 	movs pc, lr
 	
