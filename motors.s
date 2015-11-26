@@ -21,7 +21,7 @@ SET_MOTOR_SPEED:
 		str r3, [r2]			@Manda o novo DR para a memória
 		
 		mov r0, #0				@Seta r0 como o valor de retorno definido
-		movs pc, lr				@Fim do tratamento da interrupcao
+		mov pc, lr				@Fim do tratamento da interrupcao
 
 	@Trecho para mudar velocidade do motor 1:
 	will_set_motor_1:
@@ -34,15 +34,15 @@ SET_MOTOR_SPEED:
 		str r3, [r2]			@Manda o novo DR para a memória
 
 		mov r0, #0				@Seta r0 como o valor de retorno definido
-		movs pc, lr				@Fim do tratamento da interrupcao
+		mov pc, lr				@Fim do tratamento da interrupcao
 
 	invalid_motor_id:
 		mov r1, #-1
-		movs pc, lr				@Fim do tratamento da interrupcao
+		mov pc, lr				@Fim do tratamento da interrupcao
 
 	invalid_speed:
 		mov r1, #-2
-		movs pc, lr				@Fim do tratamento da interrupcao
+		mov pc, lr				@Fim do tratamento da interrupcao
 
 
 SET_MOTORS_SPEED:
@@ -64,13 +64,13 @@ SET_MOTORS_SPEED:
 	str r3, [r2]			@Manda o novo DR para a memória
 
 	mov r0, #0				@Seta r0 como o valor de retorno definido
-	movs pc, lr				@Fim do tratamento da interrupcao
+	mov pc, lr				@Fim do tratamento da interrupcao
 
 	invalid_speed_m0:
 		mov r0, #-1				@Seta r0 como o valor de retorno definido
-		movs pc, lr				@Fim do tratamento da interrupcao
+		mov pc, lr				@Fim do tratamento da interrupcao
 
 	invalid_speed_m1:
 		mov r0, #-2				@Seta r0 como o valor de retorno definido
-		movs pc, lr				@Fim do tratamento da interrupcao
+		mov pc, lr				@Fim do tratamento da interrupcao
 		
