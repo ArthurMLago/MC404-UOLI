@@ -104,7 +104,7 @@ SET_GPT:
 	str r1, [r0]
 
 	ldr r0, =GPT_OCR1
-	mov r1, #100
+	mov r1, #500
 	str r1, [r0]
 
 	ldr r0, =GPT_IR
@@ -135,30 +135,25 @@ SVC_HANDLER:
 
 	cmp r7, #16
 	bleq READ_SONAR
-	movs pc, lr
 
 	cmp r7, #17
 	bleq REGISTER_PROXIMITY_CALLBACK
-	movs pc, lr
 
 	cmp r7, #18
 	bleq SET_MOTOR_SPEED
-	movs pc, lr
 
 	cmp r7, #19
 	bleq SET_MOTORS_SPEED
-	movs pc, lr
 
 	cmp r7, #20
 	bleq GET_TIME
-	movs pc, lr
 
 	cmp r7, #21
 	bleq SET_TIME
-	movs pc, lr
 
 	cmp r7, #22
 	bleq SET_ALARM
+
 	movs pc, lr
 	
 	
