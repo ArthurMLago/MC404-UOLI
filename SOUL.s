@@ -112,22 +112,24 @@ SET_GPT:
 	str r1, [r0]
 
 SET_STACKS:
-
-	msr CPSR_c, #0b1111					@ poe o processador no modo system
-	ldr r0, = SYSTEM_STACK				@ inicializa a pilha deste modo
+	ldr r0, =SYSTEM_STACK				@ inicializa a pilha deste modo
+	msr CPSR_c, #0x11					@ poe o processador no modo system
 	mov sp, r0
 
-	msr CPSR_c, #0b10011				@ poe o processador no modo supervisor
 	ldr r0, = SUPERVISOR_STACK			@ inicializa a pilha deste modo
+	msr CPSR_c, #0x1F					@ poe o processador no modo supervisor
 	mov sp, r0
 
-	msr CPSR_c, #0b10010				@ poe o processador no modo IRQ
 	ldr r0, = IRQ_STACK					@ inicializa a pilha deste modo
+	msr CPSR_c, #0x1B					@ poe o processador no modo IRQ
 	mov sp, r0
 
-	msr CPSR_c, #0b10000				@ poe o processador no modo user
-	ldr r0, = USER_STACK				@ inicializa a pilha deste modo
-	mov sp, r0
+	@Nao precisamos setar a pilha do usuario pois eh a mesma pilha do system
+
+GO_TO_USER_PROGRAM:
+	msr CPSR_c, #0x10
+	ldr r1, =0x77802000
+	mov pc, r1
 
 SVC_HANDLER:
 
