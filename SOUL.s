@@ -52,6 +52,11 @@ RESET_HANDLER:
 	ldr r0, =interrupt_vector
 	mcr p15, 0, r0, c12, c0, 0
 
+SET_GPIO:
+	ldr r0, = 0xFFFC003E
+	ldr r1, = GPIO_GDIR
+	str r0, [r1]
+
 SET_TZIC:
 	@ Liga o controlador de interrupcoes
 	@ R1 <= TZIC_BASE
