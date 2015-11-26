@@ -4,9 +4,11 @@ READ_SONAR:
 	cmp r0, #16						@ compara o valor de r0
 	bhs invalid_sonar_error			@ se for maior do que 15, trata o erro
 	
-	@ Trecho de leitura da distancia do sonar
-	@ habilita o trigger para o sonar obter uma nova leitura
-	ldr r2, =0x53F84000     @ carregar o DR atual
+	ldr r2, =SYSTEM_FLAGS			@Deixar gravado que esta ocorrendo a rotina READ_SONAR, entao nao pode ser iniciada outra
+	ldr r1, [r2]
+	orr r1, #1
+
+	ldr r2, =0x53F84000				@ carregar o DR atual
 	ldr r1, [r2]
 	
 	bic r1, r1, #0x3c				@ Limpa os bits do multiplexador
@@ -41,7 +43,7 @@ READ_SONAR:
 
 		ldr r3, =SYSTEM_TIME		@Carregar endereco do tempo do sistema
 		ldr r1, [r3]
-		add r1, r1, #15				@Soma 15ms, o tempo que desejamos esperar
+		add r1, r1, #10				@Soma 15ms, o tempo que desejamos esperar
 		delay_loop2:
 			ldr r4, [r3]			@Verificar se o tempo do sistema ja atingiu o esperado
 			cmp r4, r1				
@@ -54,6 +56,10 @@ READ_SONAR:
 	and r1, r1, r2
 	lsr r1, #6
 
+	ldr r2, =SYSTEM_FLAGS			@Deixar gravado que esta ocorrendo a rotina READ_SONAR, entao nao pode ser iniciada outra
+	ldr r1, [r2]
+	orr r1, #1
+
 	mov r0, r1
 	mov pc, lr
 
@@ -61,7 +67,3 @@ READ_SONAR:
 invalid_sonar_error:
 	mov r0, #-1
 	mov pc, lr
-	
-.data
-SYSTEM_FLAGS:
-	.word 0x0
