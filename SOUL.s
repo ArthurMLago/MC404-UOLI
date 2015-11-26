@@ -135,6 +135,10 @@ SVC_HANDLER:
 
 	stmfd sp!, {lr}
 
+	mrs r1, cpsr						@Ligar interrupcoes IRQ de novo
+	bic r1, r1, #0x80
+	msr cpsr_c, r1
+
 	cmp r7, #16
 	bleq READ_SONAR
 
