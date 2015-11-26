@@ -75,11 +75,14 @@ REGISTER_PROXIMITY_CALLBACK:
 	cmp r1, #0x1000
 	bhs proximity_invalid_sonar_error	@Caso a distancia seja invalida
 
+	ldr r2, =PROXIMITY_STACK
+
 	ldr r3, =PROXIMITY_COUNTER			@Carregar o numero atual de callbacks
 	ldr r3, [r3]						@Achar o endereco do proximo espaco livre
 	mov r4, #7
 	mul r4, r3, r4
 	add r4, r4, #7
+	add r4, r4, r2
 	strb r0, [r4]						@Guardar 1 byte represetnando o sonar
 
 	add r4, r4, #1

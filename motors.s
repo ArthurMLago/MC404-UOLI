@@ -73,3 +73,4 @@ SET_MOTORS_SPEED:
 	invalid_speed_m1:
 		mov r0, #-2				@Seta r0 como o valor de retorno definido
 		movs pc, lr				@Fim do tratamento da interrupcao
+		

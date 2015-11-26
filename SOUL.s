@@ -43,11 +43,12 @@ interrupt_vector:
 .org 0x100
 .text
 
+
+RESET_HANDLER:
+
 	ldr r2, =SYSTEM_TIME
 	mov r0, #0
 	str r0, [r2]
-
-RESET_HANDLER:
 
 	ldr r0, =interrupt_vector
 	mcr p15, 0, r0, c12, c0, 0
@@ -163,25 +164,107 @@ IRQ_HANDLER:
 	str r1, [r0]
 
 	ldr r0, =SYSTEM_TIME
-	ldr r1, [r0]			@ r1 contem o valor de SYSTEM_TIME
-	add r1, r1, #1			@ incrementando o tempo
+	ldr r1, [r0]					@ r1 contem o valor de SYSTEM_TIME
+	add r1, r1, #1					@ incrementando o tempo
 	str r1, [r0]
 
-	ldr r2, =ALARM_STACK	@ carrega em r2 o inicio da pilha
-	ldr r3, =ALARM_COUNTER	@ carrega em r3 o valor de ALARM_COUNTER
+	@Verificar se algum alarme foi atingido:
+	ldr r2, =ALARM_STACK			@ carrega em r2 o inicio da pilha
+	ldr r3, =ALARM_COUNTER			@ carrega em r3 o valor de ALARM_COUNTER
 	ldr r3, [r3]
-	mov r4, #8				
-	mul r4, r4, r3
-	add r2, r2, r4			@ poe em r2 o valor do final da pilha
-	sub r2, r2, #8			@ poe em r2 o endereco de salto
+	mov r4, #8		
+	mul r4, r3, r4
+	add r2, r2, r4					@ poe em r2 o valor do final da pilha
+	sub r2, r2, #8					@ poe em r2 o endereco de salto
 	ldr r2, [r2]
 
 	cmp r2, r1
 	ble ALARM_HANDLER
 
+	@De meio em meio segundo, testar os sonares que tem callbacks registrados:
+	ldr r0, =SYSTEM_TIME
+	ldr r0, [r0]
+
+	ldr r2, =LAST_SONAR_CHECK
+	ldr r1, [r2]
+	add r1, r1, #500
+
+	cmp r0, r1
+	blo skiṕ_sonar_check				
+
+	mov r4, #0
+	ldr r3, =PROXIMITY_STACK		@Carregar o inicio da lista de callbacks
+	check_proximity_sonars:
+		ldr r0, [r3]				@Carregar o ID do sonar e ler seu valor
+		bl READ_SONAR
+		add r3, r3, #1				@Carregar a distancia desejada
+		ldr r1, [r3]
+
+		add r3, r3, #2				@Carrega o endereco do callback
+		ldr r2, [r3]
+
+		cmp r0, r1					@Se a distancia lida for menor que a distancia desejada, pular para o callback
+		bls distance_reached
+
+		distance_not_reached:
+			add r3, r3, #4				@Pular para o proximo elemento da lista de callbacks
+			add r4, r4, #1				@Contagem de sonares checados eh incrementada
+			ldr r1, =PROXIMITY_COUNTER	@Carregar o numero de elementos da lista de callbacks
+			ldr r1, [r1]
+			cmp r4, r1					@Se ainda nao foram checados todos os callbacks, continua no loop:
+			blt check_proximity_sonars
+			b will_end_sonar_check
+
+		distance_reached:
+			bl r2
+			sub r3, r3, #3
+
+			ldr r2, =PROXIMITY_COUNTER	@Diminuir o contador de callbacks
+			ldr r1, [r2]
+			sub r1, r1, #1
+			str r1, [r2]
+
+			cmp r4, r1					@Se ainda nao foram checados todos os callbacks, continua no loop:
+			bhs will_end_sonar_check
+
+			mov r5, r4
+			mov r6, r3
+			shift_remaining_callbacks:
+				mov r7, r6
+				add r7, r7, #7
+
+				ldrb r8, [r7]			@Copia o ID do sonar
+				strb r8, [r6]
+
+				add r6, r6, #1			@Copia a distancia
+				add r7, r7, #1
+				ldrh r8, [r7]			
+				strh r8, [r6]
+
+				add r6, r6, #2			@Copia o endereco da funcao de callback
+				add r7, r7, #2
+				ldr r8, [r7]
+				str r8, [r6]
+
+				add r6, r6, #4			@Passa para o proximo
+				add r7, r7, #4
+
+				add r5, r5, #1			@Atualiza o index e verifica se ja foram copiados todos os callbacks necessarios
+				cmp r5, r1
+				blo shift_remaining_callbacks
+
+
+	will_end_sonar_check:
+		ldr r0, =SYSTEM_TIME		@Guardar o tempo da ultima vez que os sonares foram checados
+		ldr r0, [r0]
+		ldr r1, =LAST_SONAR_CHECK
+		str r0, [r1]		
+
+	skip_sonar_check:
+
 	ldmfd sp!, {r4-r11}
 
-	sub lr, lr, #4
+	sub lr, lr, #4						@Termina interrupcao
 	mov pc, lr
 
 .include "gpt.s"
@@ -191,7 +274,7 @@ IRQ_HANDLER:
 .data
 SYSTEM_FLAGS:
 	.word 0x0
-SYSTEM_TIME: 
+SYSTEM_TIME:
 	.word 0
 ALARM_COUNTER:
 	.word 0
@@ -201,3 +284,5 @@ PROXIMITY_COUNTER:
 	.word 0
 PROXIMITY_STACK:
 	.fill 56
+LAST_SONAR_CHECK:
+	.word 0
