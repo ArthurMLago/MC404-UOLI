@@ -37,7 +37,7 @@ SET_ALARM:
 
 		ldr r7, [r6]						@ r7 guarda o tempo do alarme da pilha
 		cmp r1, r7
-		blt ordenacao						@ salto para a funcao que reorganiza a pilha com a insercao do novo alarme
+		bgt ordenacao						@ salto para a funcao que reorganiza a pilha com a insercao do novo alarme
 
 		add r6, r6, #8
 		add r5, r5, #1
@@ -59,8 +59,6 @@ SET_ALARM:
 		mov r3, #8
 		mul r8, r2, r3					@ endereco final da pilha r8 = r4 + contador* 8
 		add r8, r8, r4
-
-		mov r10, #8
 
 	loop_reorganizacao:
 		cmp r5, r2

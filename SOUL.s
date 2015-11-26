@@ -168,6 +168,20 @@ IRQ_HANDLER:
 	sub lr, lr, #4
 	mov pc, lr
 
+ALARM_HANDLER:
+	ldr r0, =ALARM_STACK	@ carrega em r0 o inicio da pilha
+	ldr r1, =ALARM_COUNTER	@ carrega em r1 o valor de ALARM_COUNTER
+	ldr r1, [r1]
+	mov r2, #8				
+	mul r2, r2, r1
+	add r0, r0, r2			@ poe em r0 o valor do final da pilha
+	sub r0, r0, #4			@ poe em r0 o endereco de salto
+	ldr r0, [r0]
+	stmfd sp!, {lr}			@ salva o lr
+	bl r0					@ salta para a funcao desejada
+	ldmfd sp!, {lr}
+	mov pc, lr
+
 .include "gpt.s"
 .include "sonares.s"
 .include "motors.s"
