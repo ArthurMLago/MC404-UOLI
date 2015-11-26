@@ -155,14 +155,31 @@ SVC_HANDLER:
 	
 	
 IRQ_HANDLER:
+
+	stmfd sp!, {r4-r11}
+
 	ldr r0, =GPT_SR
 	mov r1, #1
 	str r1, [r0]
 
 	ldr r0, =SYSTEM_TIME
-	ldr r1, [r0]
-	add r1, r1, #1
+	ldr r1, [r0]			@ r1 contem o valor de SYSTEM_TIME
+	add r1, r1, #1			@ incrementando o tempo
 	str r1, [r0]
+
+	ldr r2, =ALARM_STACK	@ carrega em r2 o inicio da pilha
+	ldr r3, =ALARM_COUNTER	@ carrega em r3 o valor de ALARM_COUNTER
+	ldr r3, [r3]
+	mov r4, #8				
+	mul r4, r4, r3
+	add r2, r2, r4			@ poe em r2 o valor do final da pilha
+	sub r2, r2, #8			@ poe em r2 o endereco de salto
+	ldr r2, [r2]
+
+	cmp r2, r1
+	ble ALARM_HANDLER
+
+	ldmfd sp!, {r4-r11}
 
 	sub lr, lr, #4
 	mov pc, lr
