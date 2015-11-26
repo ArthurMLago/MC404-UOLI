@@ -181,6 +181,7 @@ IRQ_HANDLER:
 	ldr r3, [r3]
 
 	cmp r3, #0						@Se nao existirem alarmas para serem procurados, pular o alarm handler:
+	beq skip_alarm_handler
 
 	mov r4, #8		
 	mul r4, r3, r4

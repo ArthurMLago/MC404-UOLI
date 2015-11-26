@@ -1,0 +1,7 @@
+*.o
+*.x
+
+LOCO.c
+bico.s
+disk.img
+api_robot2.h
