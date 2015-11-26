@@ -293,7 +293,7 @@ IRQ_HANDLER:
 	ldmfd sp!, {r4-r11}
 
 	sub lr, lr, #4						@Termina interrupcao
-	mov pc, lr
+	movs pc, lr
 
 .include "gpt.s"
 .include "sonares.s"
