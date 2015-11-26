@@ -177,6 +177,9 @@ IRQ_HANDLER:
 	ldr r2, =ALARM_STACK			@ carrega em r2 o inicio da pilha
 	ldr r3, =ALARM_COUNTER			@ carrega em r3 o valor de ALARM_COUNTER
 	ldr r3, [r3]
+
+	cmp r3, #0						@Se nao existirem alarmas para serem procurados, pular o alarm handler:
+
 	mov r4, #8		
 	mul r4, r3, r4
 	add r2, r2, r4					@ poe em r2 o valor do final da pilha
@@ -185,6 +188,8 @@ IRQ_HANDLER:
 
 	cmp r2, r1
 	ble ALARM_HANDLER
+
+	skip_alarm_handler:
 
 	@De meio em meio segundo, testar os sonares que tem callbacks registrados:
 	ldr r0, =SYSTEM_TIME
@@ -195,18 +200,33 @@ IRQ_HANDLER:
 	add r1, r1, #500
 
 	cmp r0, r1
-	blo skiṕ_sonar_check				
+	blo skip_sonar_check				
 
 	mov r4, #0
 	ldr r3, =PROXIMITY_STACK		@Carregar o inicio da lista de callbacks
 	check_proximity_sonars:
-		ldr r0, [r3]				@Carregar o ID do sonar e ler seu valor
-		bl READ_SONAR
+		ldr r5, =PROXIMITY_COUNTER	@Para nao dar erro quando nao houverem callbacks
+		ldr r5, [r5]
+		cmp r5, #0
+		beq will_end_sonar_check
+
+		ldrb r0, [r3]				@Carregar o ID do sonar e ler seu valor
+
+		ldr r6, = SYSTEM_FLAGS		@Verificar se ja estamos rodando outro READ_SONAR, se ja estamos, pula
+		ldr r6, [r6]
+		and r6, #1
+		cmp r6, #1
+
+		blne READ_SONAR
+		beq skip_sonar_check
+
+
 		add r3, r3, #1				@Carregar a distancia desejada
-		ldr r1, [r3]
+		ldrh r1, [r3]
 
 		add r3, r3, #2				@Carrega o endereco do callback
 		ldr r2, [r3]
+
 
 		cmp r0, r1					@Se a distancia lida for menor que a distancia desejada, pular para o callback
 		bls distance_reached
@@ -221,7 +241,7 @@ IRQ_HANDLER:
 			b will_end_sonar_check
 
 		distance_reached:
-			bl r2
+			blx r2
 			sub r3, r3, #3
 
 			ldr r2, =PROXIMITY_COUNTER	@Diminuir o contador de callbacks

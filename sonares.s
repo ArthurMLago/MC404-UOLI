@@ -9,6 +9,7 @@ READ_SONAR:
 	ldr r2, =SYSTEM_FLAGS				@Deixar gravado que esta ocorrendo a rotina READ_SONAR, entao nao pode ser iniciada outra
 	ldr r1, [r2]
 	orr r1, #1
+	str r1, [r2]
 
 	ldr r2, =0x53F84000					@ carregar o DR atual
 	ldr r1, [r2]
@@ -58,9 +59,10 @@ READ_SONAR:
 	and r1, r1, r2
 	lsr r1, #6
 
-	ldr r2, =SYSTEM_FLAGS				@Deixar gravado que esta ocorrendo a rotina READ_SONAR, entao nao pode ser iniciada outra
+	ldr r2, =SYSTEM_FLAGS				@Dessetr a flag de quando estiver lendo sonnar, pq ja acabamos
 	ldr r1, [r2]
-	orr r1, #1
+	bic r1, #1
+	str r1, [r2]
 
 	ldmfd sp!, {r4}
 

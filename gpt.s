@@ -107,6 +107,6 @@ ALARM_HANDLER:
 
 
 	stmfd sp!, {lr}			@ salva o lr
-	bl r0					@ salta para a funcao desejada
+	blx r0					@ salta para a funcao desejada
 	ldmfd sp!, {lr}
 	mov pc, lr
