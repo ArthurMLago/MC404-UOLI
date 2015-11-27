@@ -22,9 +22,9 @@
 .set MAX_ALARMS, 			0x00000008
 
 @ Constantes para as regioes de memoria
-.set SYSTEM_STACK,			0x77801900
-.set SUPERVISOR_STACK,		0x77801950
-.set IRQ_STACK,				0x77801990
+.set SYSTEM_STACK,			0x778018AA
+.set SUPERVISOR_STACK,		0x77801AEA
+.set IRQ_STACK,				0x77801D2A
 
 .org 0x0
 .section .iv, "a"

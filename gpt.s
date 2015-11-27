@@ -53,7 +53,7 @@ SET_ALARM:
 		add r3, r3, #1
 		str r3, [r2]
 
-		ldmfd sp!, {r4, r11}
+		ldmfd sp!, {r4-r11}
 
 		mov pc, lr 
 
@@ -83,7 +83,7 @@ SET_ALARM:
 		str r0, [r8, #4]
 
 
-		ldmfd sp!, {r4, r11}
+		ldmfd sp!, {r4 - r11}
 		mov pc, lr 
 
 	max_error:
