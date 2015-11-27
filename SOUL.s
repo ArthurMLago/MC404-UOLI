@@ -221,7 +221,7 @@ IRQ_HANDLER:
 
 	ldr r2, =LAST_SONAR_CHECK
 	ldr r1, [r2]
-	add r1, r1, #40
+	add r1, r1, #15
 
 	cmp r0, r1
 	blo skip_sonar_check				
@@ -239,11 +239,12 @@ IRQ_HANDLER:
 
 		ldrb r0, [r3]				@Carregar o ID do sonar e ler seu valor
 
-		stmfd sp!, {lr}
+		stmfd sp!, {r1-r3,lr}
+
 
 		bl READ_SONAR
 
-		ldmfd sp!, {lr}
+		ldmfd sp!, {r1-r3,lr}
 
 		add r3, r3, #4				@Carregar a distancia desejada
 		ldr r1, [r3]
