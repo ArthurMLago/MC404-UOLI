@@ -24,7 +24,7 @@ SET_ALARM:
 	ldr r3, [r3]
 
 	cmp r3, r1							@compara para checar erro
-	bls time_error
+	bhs time_error
 
 	ldr r4, =ALARM_STACK				@ poe em r4 o endereco da pilha de alarmes
 
@@ -53,6 +53,8 @@ SET_ALARM:
 		add r3, r3, #1
 		str r3, [r2]
 
+		ldmfd sp!, {r4, r11}
+
 		mov pc, lr 
 
 	ordenacao:
@@ -79,6 +81,9 @@ SET_ALARM:
 
 		str r1, [r8]					@ insercao do alarme no seu devido luar na pilha
 		str r0, [r8, #4]
+
+
+		ldmfd sp!, {r4, r11}
 		mov pc, lr 
 
 	max_error:
