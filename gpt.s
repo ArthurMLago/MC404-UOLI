@@ -18,13 +18,13 @@ SET_ALARM:
 	ldr r2, [r2]
 
 	cmp r2, #MAX_ALARMS					@ compara para checar erro
-	bgt max_error
+	bhi max_error
 
 	ldr r3, =SYSTEM_TIME				@ poe em r3, o valor do contador
 	ldr r3, [r3]
 
 	cmp r3, r1							@compara para checar erro
-	blt time_error
+	bhs time_error
 
 	ldr r4, =ALARM_STACK				@ poe em r4 o endereco da pilha de alarmes
 
@@ -33,11 +33,11 @@ SET_ALARM:
 
 	loop_insercao:						@ loop que encontra onde o novo alarme deve ser inserido na pilha
 		cmp r5, r2
-		bge fim_loop_insercao
+		bhs fim_loop_insercao
 
 		ldr r7, [r6]						@ r7 guarda o tempo do alarme da pilha
 		cmp r1, r7
-		bgt ordenacao						@ salto para a funcao que reorganiza a pilha com a insercao do novo alarme
+		bhi ordenacao						@ salto para a funcao que reorganiza a pilha com a insercao do novo alarme
 
 		add r6, r6, #8
 		add r5, r5, #1
@@ -53,6 +53,8 @@ SET_ALARM:
 		add r3, r3, #1
 		str r3, [r2]
 
+		ldmfd sp!, {r4, r11}
+
 		mov pc, lr 
 
 	ordenacao:
@@ -62,7 +64,7 @@ SET_ALARM:
 
 	loop_reorganizacao:
 		cmp r5, r2
-		bge fim_loop_reorganizacao
+		bhs fim_loop_reorganizacao
 
 		mov r9, r8						@ r9 guarda o endereco que contem os dados que devem ser transferidos para frente
 		sub r9, r9, #8
@@ -79,6 +81,9 @@ SET_ALARM:
 
 		str r1, [r8]					@ insercao do alarme no seu devido luar na pilha
 		str r0, [r8, #4]
+
+
+		ldmfd sp!, {r4, r11}
 		mov pc, lr 
 
 	max_error:

@@ -22,10 +22,9 @@
 .set MAX_ALARMS, 			0x00000008
 
 @ Constantes para as regioes de memoria
-.set SYSTEM_STACK,			0x77801000
-.set SUPERVISOR_STACK,		0x77801200
-.set IRQ_STACK,				0x77801400
-.set USER_STACK,			0x77801600
+.set SYSTEM_STACK,			0x77801900
+.set SUPERVISOR_STACK,		0x77801950
+.set IRQ_STACK,				0x77801990
 
 .org 0x0
 .section .iv, "a"
@@ -171,6 +170,7 @@ IRQ_HANDLER:
 
 	ldr r0, =GPT_SR
 	mov r1, #1
+
 	str r1, [r0]
 
 	ldr r0, =SYSTEM_TIME
@@ -193,7 +193,8 @@ IRQ_HANDLER:
 	ldr r2, [r2]
 
 	cmp r2, r1
-	ble ALARM_HANDLER
+
+	blle ALARM_HANDLER
 
 	skip_alarm_handler:
 
@@ -210,6 +211,8 @@ IRQ_HANDLER:
 
 	mov r4, #0
 	ldr r3, =PROXIMITY_STACK		@Carregar o inicio da lista de callbacks
+
+
 	check_proximity_sonars:
 		ldr r5, =PROXIMITY_COUNTER	@Para nao dar erro quando nao houverem callbacks
 		ldr r5, [r5]
