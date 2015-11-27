@@ -136,10 +136,10 @@ SVC_HANDLER:
 	stmfd sp!, {lr}
 
 	cmp r7, #7
-	beq END_CALLBACK
+	beq ALARM_END_CALLBACK
 
 	cmp r7, #8
-	beq 
+	beq PROXIMITY_END_CALLBACK
 
 	cmp r7, #16
 	bleq READ_SONAR
