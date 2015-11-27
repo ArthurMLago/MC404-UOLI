@@ -104,7 +104,7 @@ SET_GPT:
 	str r1, [r0]
 
 	ldr r0, =GPT_OCR1
-	mov r1, #500
+	ldr r1, =5000
 	str r1, [r0]
 
 	ldr r0, =GPT_IR
@@ -135,9 +135,9 @@ SVC_HANDLER:
 
 	stmfd sp!, {lr}
 
-	mrs r1, cpsr						@Ligar interrupcoes IRQ de novo
-	bic r1, r1, #0x80
-	msr cpsr_c, r1
+	@mrs r1, cpsr						@Ligar interrupcoes IRQ de novo
+	@bic r1, r1, #0x80
+	@msr cpsr_c, r1
 
 	cmp r7, #16
 	bleq READ_SONAR
