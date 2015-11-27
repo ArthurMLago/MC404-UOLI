@@ -5,17 +5,12 @@ READ_SONAR:
 
 	cmp r0, #16							@ compara o valor de r0
 	bhs read_sonar_invalid_sonar_error	@ se for maior do que 15, trata o erro
-	
-	ldr r2, =SYSTEM_FLAGS				@Deixar gravado que esta ocorrendo a rotina READ_SONAR, entao nao pode ser iniciada outra
-	ldr r1, [r2]
-	orr r1, r1, #1
-	str r1, [r2]
 
 	ldr r2, =0x53F84000					@ carregar o DR atual
 	ldr r1, [r2]
 	
 	bic r1, r1, #0x3c					@ Limpa os bits do multiplexador
-	orr r1, r1, r0, lsl #2					@ Seta o ID do sonar desejado
+	orr r1, r1, r0, lsl #2				@ Seta o ID do sonar desejado
 	orr r1, r1, #2						@ Seta TRIGGER para 1
 @@@@@@@@@@@@@@@@@ Talvez precisa-se dar um delay entre setar o sonar id e o trigger?
 
@@ -59,11 +54,6 @@ READ_SONAR:
 	lsr r1, #6
 
 	mov r0, r1
-
-	ldr r2, =SYSTEM_FLAGS				@Dessetr a flag de quando estiver lendo sonnar, pq ja acabamos
-	ldr r1, [r2]
-	bic r1, #1
-	str r1, [r2]
 
 	ldmfd sp!, {r4-r11, lr}
 

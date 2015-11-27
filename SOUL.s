@@ -18,13 +18,14 @@
 .set GPIO_GDIR,				0x53F84004
 .SET GPIO_PSR,				0x53F84008
 
-@ Constante para os alarmes
-.set MAX_ALARMS, 			0x00000008
-
 @ Constantes para as regioes de memoria
 .set SYSTEM_STACK,			0x778018AA
 .set SUPERVISOR_STACK,		0x77801AEA
 .set IRQ_STACK,				0x77801D2A
+
+@ Constante para os alarmes
+.set MAX_ALARMS, 			0x00000008
+.set TIME_SZ,				5000
 
 .org 0x0
 .section .iv, "a"
@@ -103,7 +104,7 @@ SET_GPT:
 	str r1, [r0]
 
 	ldr r0, =GPT_OCR1
-	ldr r1, =5000
+	ldr r1, =TIME_SZ
 	str r1, [r0]
 
 	ldr r0, =GPT_IR
@@ -137,6 +138,9 @@ SVC_HANDLER:
 	cmp r7, #7
 	beq END_CALLBACK
 
+	cmp r7, #8
+	beq 
+
 	cmp r7, #16
 	bleq READ_SONAR
 
@@ -162,10 +166,15 @@ SVC_HANDLER:
 
 	movs pc, lr
 
-	END_CALLBACK:
+	ALARM_END_CALLBACK:
 		ldmfd sp!, {lr}
 		msr CPSR_c, #0x12					@ poe o processador no modo IRQ
 		b ALARM_COMEBACK_IRQ
+
+	PROXIMITY_END_CALLBACK:
+		ldmfd sp!, {lr}
+		msr CPSR_c, #0x12					@ poe o processador no modo IRQ
+		b PROXIMITY_COMEBACK_IRQ
 	
 	
 IRQ_HANDLER:
@@ -198,7 +207,11 @@ IRQ_HANDLER:
 
 	cmp r2, r1
 
-	blle ALARM_HANDLER
+	stmfd sp!, {lr}					@Salvar o LR
+
+	blls ALARM_HANDLER
+
+	ldmfd sp!, {lr}	
 
 	skip_alarm_handler:
 
@@ -208,7 +221,7 @@ IRQ_HANDLER:
 
 	ldr r2, =LAST_SONAR_CHECK
 	ldr r1, [r2]
-	add r1, r1, #10
+	add r1, r1, #40
 
 	cmp r0, r1
 	blo skip_sonar_check				
@@ -225,14 +238,11 @@ IRQ_HANDLER:
 
 		ldrb r0, [r3]				@Carregar o ID do sonar e ler seu valor
 
-		ldr r6, = SYSTEM_FLAGS		@Verificar se ja estamos rodando outro READ_SONAR, se ja estamos, pula
-		ldr r6, [r6]
-		and r6, #1
-		cmp r6, #1
+		stmfd sp!, {lr}
 
-		blne READ_SONAR
-		beq skip_sonar_check
+		bl READ_SONAR
 
+		ldmfd sp!, {lr}
 
 		add r3, r3, #1				@Carregar a distancia desejada
 		ldrh r1, [r3]
@@ -254,8 +264,18 @@ IRQ_HANDLER:
 			b will_end_sonar_check
 
 		distance_reached:
-			blx r2
-			sub r3, r3, #3
+			stmfd sp!, {lr}
+			msr CPSR_c, #0x10			@Muda para modo usuario para executar o callnack
+
+			blx r2						@Pular para o callback
+
+			mov r7, #8					@syscall para sair do modo usuario
+			svc #0
+				PROXIMITY_COMEBACK_IRQ:		@Após a syscall para voltsr ao modo de usuario voltar aqui
+
+			ldmfd sp!, {lr}
+
+			sub r3, r3, #3				@Voltar para o endereco do inicio do callback
 
 			ldr r2, =PROXIMITY_COUNTER	@Diminuir o contador de callbacks
 			ldr r1, [r2]
@@ -310,8 +330,6 @@ IRQ_HANDLER:
 .include "motors.s"
 
 .data
-SYSTEM_FLAGS:
-	.word 0x0
 SYSTEM_TIME:
 	.word 0
 ALARM_COUNTER:

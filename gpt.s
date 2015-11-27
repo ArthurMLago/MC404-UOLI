@@ -82,6 +82,10 @@ SET_ALARM:
 		str r1, [r8]					@ insercao do alarme no seu devido luar na pilha
 		str r0, [r8, #4]
 
+		ldr r2, =ALARM_COUNTER
+		ldr r3, [r2]
+		add r3, r3, #1
+		str r3, [r2]
 
 		ldmfd sp!, {r4 - r11}
 		mov pc, lr 
