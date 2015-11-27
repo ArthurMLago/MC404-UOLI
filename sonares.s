@@ -68,7 +68,7 @@ read_sonar_invalid_sonar_error:
 
 
 REGISTER_PROXIMITY_CALLBACK:
-	stmfd sp!, {r4}
+	stmfd sp!, {r4-r5}
 
 	cmp r0, #16
 	bhs proximity_invalid_sonar_error	@Caso o sonar seja invalido
@@ -76,39 +76,40 @@ REGISTER_PROXIMITY_CALLBACK:
 	cmp r1, #0x1000
 	bhs proximity_invalid_sonar_error	@Caso a distancia seja invalida
 
-	ldr r2, =PROXIMITY_STACK
+	ldr r5, =PROXIMITY_STACK
 
 	ldr r3, =PROXIMITY_COUNTER			@Carregar o numero atual de callbacks
 	ldr r3, [r3]						@Achar o endereco do proximo espaco livre
-	mov r4, #7
+	mov r4, #12
 	mul r4, r3, r4
-	add r4, r4, #7
-	add r4, r4, r2
-	strb r0, [r4]						@Guardar 1 byte represetnando o sonar
 
-	add r4, r4, #1
-	strh r1, [r4]						@Guardar 2 bytes representando a distancia
+	add r4, r4, r5
+	
+	str r0, [r4]						@Guardar 1 byte represetnando o sonar
 
-	add r4, r4, #2
+	add r4, r4, #4
+	str r1, [r4]						@Guardar 2 bytes representando a distancia
+
+	add r4, r4, #4
 	str r2, [r4]						@Guardar uma palavra para o poteiro da funcao
 
 	ldr r2, =PROXIMITY_COUNTER
 	add r3, r3, #1
 	str r3, [r2]
 
-	ldmfd sp!, {r4}
+	ldmfd sp!, {r4-r5}
 
 	mov r0, #0
 	mov pc, lr
 
 	proximity_invalid_sonar_error:
-		ldmfd sp!, {r4}
+		ldmfd sp!, {r4-r5}
 
 		mov r0, #-1
 		mov pc, lr
 
 	proximity_maxcallbacks_error:
-		ldmfd sp!, {r4}
+		ldmfd sp!, {r4-r5}
 
 		mov r0, #-2
 		mov pc, lr

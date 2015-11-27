@@ -226,15 +226,16 @@ IRQ_HANDLER:
 	cmp r0, r1
 	blo skip_sonar_check				
 
+	ldr r0, =PROXIMITY_COUNTER	@Para nao dar erro quando nao houverem callbacks
+	ldr r0, [r0]
+	cmp r0, #0
+	beq will_end_sonar_check
+
 	mov r4, #0
 	ldr r3, =PROXIMITY_STACK		@Carregar o inicio da lista de callbacks
 
 
 	check_proximity_sonars:
-		ldr r5, =PROXIMITY_COUNTER	@Para nao dar erro quando nao houverem callbacks
-		ldr r5, [r5]
-		cmp r5, #0
-		beq will_end_sonar_check
 
 		ldrb r0, [r3]				@Carregar o ID do sonar e ler seu valor
 
@@ -244,72 +245,34 @@ IRQ_HANDLER:
 
 		ldmfd sp!, {lr}
 
-		add r3, r3, #1				@Carregar a distancia desejada
-		ldrh r1, [r3]
+		add r3, r3, #4				@Carregar a distancia desejada
+		ldr r1, [r3]
 
-		add r3, r3, #2				@Carrega o endereco do callback
+		add r3, r3, #4				@Carrega o endereco do callback
 		ldr r2, [r3]
 
 
 		cmp r0, r1					@Se a distancia lida for menor que a distancia desejada, pular para o callback
-		bls distance_reached
+		bhi check_for_more_sonars
 
-		distance_not_reached:
+		@Caso tenha atingido a distancia:
+		stmfd sp!, {lr}
+
+		msr CPSR_c, #0x10			@Muda para modo usuario para executar o callnack
+		blx r2						@Pular para o callback
+		mov r7, #8					@syscall para sair do modo usuario
+		svc #0
+			PROXIMITY_COMEBACK_IRQ:		@Após a syscall para voltsr ao modo de usuario voltar aqui
+
+		ldmfd sp!, {lr}
+
+		check_for_more_sonars:
 			add r3, r3, #4				@Pular para o proximo elemento da lista de callbacks
 			add r4, r4, #1				@Contagem de sonares checados eh incrementada
 			ldr r1, =PROXIMITY_COUNTER	@Carregar o numero de elementos da lista de callbacks
 			ldr r1, [r1]
 			cmp r4, r1					@Se ainda nao foram checados todos os callbacks, continua no loop:
 			blt check_proximity_sonars
-			b will_end_sonar_check
-
-		distance_reached:
-			stmfd sp!, {lr}
-			msr CPSR_c, #0x10			@Muda para modo usuario para executar o callnack
-
-			blx r2						@Pular para o callback
-
-			mov r7, #8					@syscall para sair do modo usuario
-			svc #0
-				PROXIMITY_COMEBACK_IRQ:		@Após a syscall para voltsr ao modo de usuario voltar aqui
-
-			ldmfd sp!, {lr}
-
-			sub r3, r3, #3				@Voltar para o endereco do inicio do callback
-
-			ldr r2, =PROXIMITY_COUNTER	@Diminuir o contador de callbacks
-			ldr r1, [r2]
-			sub r1, r1, #1
-			str r1, [r2]
-
-			cmp r4, r1					@Se ainda nao foram checados todos os callbacks, continua no loop:
-			bhs will_end_sonar_check
-
-			mov r5, r4
-			mov r6, r3
-			shift_remaining_callbacks:
-				mov r7, r6
-				add r7, r7, #7
-
-				ldrb r8, [r7]			@Copia o ID do sonar
-				strb r8, [r6]
-
-				add r6, r6, #1			@Copia a distancia
-				add r7, r7, #1
-				ldrh r8, [r7]			
-				strh r8, [r6]
-
-				add r6, r6, #2			@Copia o endereco da funcao de callback
-				add r7, r7, #2
-				ldr r8, [r7]
-				str r8, [r6]
-
-				add r6, r6, #4			@Passa para o proximo
-				add r7, r7, #4
-
-				add r5, r5, #1			@Atualiza o index e verifica se ja foram copiados todos os callbacks necessarios
-				cmp r5, r1
-				blo shift_remaining_callbacks
 
 
 	will_end_sonar_check:
@@ -339,6 +302,6 @@ ALARM_STACK:
 PROXIMITY_COUNTER:
 	.word 0
 PROXIMITY_STACK:
-	.fill 56
+	.fill 96
 LAST_SONAR_CHECK:
 	.word 0

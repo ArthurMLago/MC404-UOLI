@@ -117,7 +117,7 @@ ALARM_HANDLER:
 
 	stmfd sp!, {lr}			@ salva o lr
 	
-	msr CPSR_c, #0x10		@Muda para modo usuario para executar o callnack
+	msr CPSR_c, #0x10		@Muda para modo usuario para executar o callback
 
 	blx r0					@ salta para a funcao desejada
 
