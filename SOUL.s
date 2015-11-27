@@ -113,15 +113,15 @@ SET_GPT:
 
 SET_STACKS:
 	ldr r0, =SYSTEM_STACK				@ inicializa a pilha deste modo
-	msr CPSR_c, #0x11					@ poe o processador no modo system
+	msr CPSR_c, #0x1F					@ poe o processador no modo system
 	mov sp, r0
 
 	ldr r0, = SUPERVISOR_STACK			@ inicializa a pilha deste modo
-	msr CPSR_c, #0x1F					@ poe o processador no modo supervisor
+	msr CPSR_c, #0x13					@ poe o processador no modo supervisor
 	mov sp, r0
 
 	ldr r0, = IRQ_STACK					@ inicializa a pilha deste modo
-	msr CPSR_c, #0x1B					@ poe o processador no modo IRQ
+	msr CPSR_c, #0x12					@ poe o processador no modo IRQ
 	mov sp, r0
 
 	@Nao precisamos setar a pilha do usuario pois eh a mesma pilha do system
@@ -135,9 +135,8 @@ SVC_HANDLER:
 
 	stmfd sp!, {lr}
 
-	@mrs r1, cpsr						@Ligar interrupcoes IRQ de novo
-	@bic r1, r1, #0x80
-	@msr cpsr_c, r1
+	cmp r7, #7
+	beq END_CALLBACK
 
 	cmp r7, #16
 	bleq READ_SONAR
@@ -163,6 +162,11 @@ SVC_HANDLER:
 	ldmfd sp!, {lr}
 
 	movs pc, lr
+
+	END_CALLBACK:
+		ldmfd sp!, {lr}
+		msr CPSR_c, #0x12					@ poe o processador no modo IRQ
+		b ALARM_COMEBACK_IRQ
 	
 	
 IRQ_HANDLER:
@@ -203,7 +207,7 @@ IRQ_HANDLER:
 
 	ldr r2, =LAST_SONAR_CHECK
 	ldr r1, [r2]
-	add r1, r1, #500
+	add r1, r1, #10
 
 	cmp r0, r1
 	blo skip_sonar_check				
