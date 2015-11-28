@@ -17,7 +17,7 @@ READ_SONAR:
 	str r1, [r2]						@Enviar o DR tratado de volta
 
 	ldr r2, =0
-	ldr r3, =15000
+	ldr r3, =10000
 	delay_loop1:
 		add r2, r2, #1
 		cmp r2, r3
@@ -38,7 +38,7 @@ READ_SONAR:
 		beq flag_was_set
 
 		ldr r6, =2
-		ldr r3, =15000
+		ldr r3, =10000
 		delay_loop2:
 			add r6, r6, #1
 			cmp r6, r3

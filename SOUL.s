@@ -179,7 +179,7 @@ SVC_HANDLER:
 	
 IRQ_HANDLER:
 
-	stmfd sp!, {r4-r11}
+	stmfd sp!, {r0-r11}
 
 	ldr r0, =GPT_SR
 	mov r1, #1
@@ -252,12 +252,11 @@ IRQ_HANDLER:
 		add r3, r3, #4				@Carrega o endereco do callback
 		ldr r2, [r3]
 
-
 		cmp r0, r1					@Se a distancia lida for menor que a distancia desejada, pular para o callback
 		bhi check_for_more_sonars
 
 		@Caso tenha atingido a distancia:
-		stmfd sp!, {lr}
+		stmfd sp!, {r0-r3,lr}
 
 		msr CPSR_c, #0x10			@Muda para modo usuario para executar o callnack
 		blx r2						@Pular para o callback
@@ -265,7 +264,7 @@ IRQ_HANDLER:
 		svc #0
 			PROXIMITY_COMEBACK_IRQ:		@Após a syscall para voltsr ao modo de usuario voltar aqui
 
-		ldmfd sp!, {lr}
+		ldmfd sp!, {r0-r3,lr}
 
 		check_for_more_sonars:
 			add r3, r3, #4				@Pular para o proximo elemento da lista de callbacks
@@ -284,7 +283,7 @@ IRQ_HANDLER:
 
 	skip_sonar_check:
 
-	ldmfd sp!, {r4-r11}
+	ldmfd sp!, {r0-r11}
 
 	sub lr, lr, #4						@Termina interrupcao
 	movs pc, lr
